@@ -1,0 +1,96 @@
+{% extends 'layout.twig' %}
+
+{% block title %}{{ parent() }} Compte de {{ account.username }}{% endblock %}
+
+{% block breadcrumb %}
+  {{ parent() }}
+  <li><a href="{{ baseUrl() }}">Accueil</a></li>
+  <li class="active">Compte de {{ account.username }}</li>
+{% endblock %}
+
+{% block content %}
+  <h2 class="no-top-margin">
+    <i class="fa fa-user text-muted"></i> {{ account.username }}#{{ account.battlenet_id }}
+    <small><i class="fa fa-globe" data-toggle="tooltip" title="Région"></i> {{ account.region.find_one.name }}</small>
+    <a href="http://{{ account.region.find_one.slug }}.battle.net/d3/fr/profile/{{ account.username }}-{{ account.battlenet_id }}/" data-toggle="tooltip" title="Profil officiel Battle.net" class="pull-right"><i class="fa fa-external-link"></i></a>
+  </h2>
+  
+  <ul class="list-inline list-unstyled">
+    <li>Dernière actualisation il y a {{ account.last_updated|time_ago }}</li>
+    <li><button class="btn btn-success btn-xs" id="refresh-account-btn"><i class="fa fa-refresh"></i>&nbsp; Actualiser le compte</button></li>
+    <li><button class="btn btn-danger btn-xs" id="delete-account-btn"><i class="fa fa-trash"></i>&nbsp; Supprimer</button></li>
+  </ul>
+  
+  <h3><i class="fa fa-star text-muted"></i> {{ account.heros.count }} Héros</h3>
+
+  {% if account.heros.count > 0 %}<div class="row">{% endif %}
+  {% for hero in account.heros.find_many %}
+    <div class="col-xs-3">
+      <div class="well well-sm">
+        {% if hero.seasonal == 1 %} <i class="fa fa-leaf fa-lg pull-right" data-toggle="tooltip" title="Héros saisonnier"></i>{% endif %}
+        {% if hero.hardcore == 1 %} <i class="fa fa-bomb fa-lg pull-right" data-toggle="tooltip" title="Héros hardcore"></i>{% endif %}
+        {% if hero.lastly_played == 1 %} <i class="fa fa-gamepad fa-lg pull-right" data-toggle="tooltip" title="Dernier Héros joué"></i>{% endif %}
+        <a href="{{ baseUrl() }}/account/{{ account.id }}/hero/{{ hero.id }}" class="lead btn-block no-bottom-margin">{{ hero.name }}</a>
+        <small>
+          <i class="fa fa-tag" data-toggle="tooltip" title="Classe"></i> {% if hero.gender == 1 %}{{ hero.hero_class.find_one.name_female }}{% else %}{{ hero.hero_class.find_one.name_male }}{% endif %}
+          {% if hero.last_updated is not empty %}&nbsp; <i class="fa fa-calendar" data-toggle="tooltip" title="Dernière actualisation"></i> {{ hero.last_updated|time_ago }}{% endif %}
+        </small>
+      </div>
+    </div>
+  {% else %}
+    <div class="alert alert-warning">Aucun Héros à afficher. Il semblerait que vous n'ayez pas encore commencé à jouer.</div>
+  {% endfor %}
+  {% if account.heros.count > 0 %}</div>{% endif %}
+
+  <script>
+    $(function () {
+      var hoh_refresh_account_btn = $('button#refresh-account-btn');
+      var hoh_delete_account_btn = $('button#delete-account-btn');
+
+      hoh_refresh_account_btn.on('click', function() {
+        hoh_refresh_account_btn.html('<i class="fa fa-circle-o-notch fa-spin"></i> Patientez... (cela peut prendre du temps)').prop('disabled', true);
+        
+        $.ajax({
+          type: 'POST',
+          url: '{{ baseUrl() }}/account/{{ account.id }}',
+          error: function() {
+            alert('Une erreur réseau est survenue.');
+          },
+          success: function(response) {
+            if (response.result == 'failure') {
+              alert(response.data.message);
+            } else if (response.result == 'success') {
+              alert(response.data.message);
+              location.replace('{{ baseUrl() }}/account/{{ account.id }}');
+            }
+          },
+          complete: function() {
+            hoh_refresh_account_btn.html('<i class="fa fa-refresh"></i>&nbsp; Actualiser le compte').prop('disabled', false);
+          }
+        });
+      });
+
+      hoh_delete_account_btn.on('click', function() {
+        if (!confirm('Cette action supprime ce compte et l\'ensemble des Héros associés. Confirmez-vous ?')) {
+          return false;
+        }
+
+        $.ajax({
+          type: 'DELETE',
+          url: '{{ baseUrl() }}/account/{{ account.id }}',
+          error: function() {
+            alert('Une erreur réseau est survenue.');
+          },
+          success: function(response) {
+            if (response.result == 'failure') {
+              alert(response.data.message);
+            } else if (response.result == 'success') {
+              alert(response.data.message);
+              location.replace('{{ baseUrl() }}');
+            }
+          }
+        });
+      });
+    });
+  </script>
+{% endblock %}

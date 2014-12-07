@@ -1,0 +1,16 @@
+{% extends 'layout.twig' %}
+
+{% block title %}{{ parent() }} Erreur{% endblock %}
+
+{% block breadcrumb %}
+  {{ parent() }}
+  <li><a href="{{ baseUrl() }}">Accueil</a></li>
+  <li class="active">Erreur</li>
+{% endblock %}
+
+{% block content %}
+  <div class="alert alert-danger">
+    <h4><i class="fa fa-exclamation-circle"></i> Zut, une erreur est survenue</h4>
+    {{ message }}
+  </div>
+{% endblock %}

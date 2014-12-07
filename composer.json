@@ -1,0 +1,22 @@
+{
+  "require": {
+    "php": ">=5.4.0",
+    "monolog/monolog": "1.*",
+    "slim/slim": "2.*",
+    "slim/views": "0.*",
+    "twig/twig": "1.*",
+    "j4mie/idiorm": "1.*",
+    "j4mie/paris": "1.*",
+    "rmccue/requests": ">=1.0",
+    "rhumsaa/array_column": "~1.1"
+  },
+  "autoload": {
+    "psr-0": {"HoH\\": "src/"},
+    "files": [
+      "src/helpers.php"
+    ]
+  },
+  "bin": [
+    "bin/pull.php"
+  ]
+}

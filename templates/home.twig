@@ -1,0 +1,126 @@
+{% extends 'layout.twig' %}
+
+{% block title %}{{ parent() }} Accueil{% endblock %}
+
+{% block breadcrumb %}
+  {{ parent() }}
+  <li class="active">Accueil</li>
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-xs-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title"><i class="fa fa-male"></i> Sélectionnez un compte existant</h3>
+        </div>
+        {% if accounts is not empty %}
+          <div class="list-group">
+            {% for account in accounts %}
+              <a href="{{ baseUrl() }}/account/{{ account.id }}" class="list-group-item">
+                <span class="badge">{{ account.heros.count }} Héros</span>
+                <h4 class="list-group-item-heading"><b>{{ account.username }}#{{ account.battlenet_id }}</b></h4>
+                <p class="list-group-item-text"><i class="fa fa-globe" data-toggle="tooltip" title="Région"></i> {{ account.region.find_one.name }} &nbsp; <i class="fa fa-calendar" data-toggle="tooltip" title="Dernière actualisation"></i> {{ account.last_updated|time_ago }}</p>
+              </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="panel-body">
+            <div class="alert alert-info">
+              <h4>Aucun compte trouvé.</h4>
+              <p>Importez-en un à l'aide de ce formulaire <i class="fa fa-arrow-right"></i></p>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-xs-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title"><i class="fa fa-download"></i> Importez un compte depuis Battle.net</h3>
+        </div>
+        <div class="panel-body">
+          <form id="hoh-import-form">
+            <div class="alert hidden hoh-import-message"></div>
+
+            <div class="form-group">
+              <label for="username">Nom Battle.net</label>
+              <input name="username" id="username" type="text" class="form-control" required autocomplete="off" placeholder="Noob">
+            </div>
+
+            <div class="form-group">
+              <label for="battlenet_id">ID Battle.net</label>
+              <input name="battlenet_id" id="battlenet_id" type="text" class="form-control" required autocomplete="off" pattern="\d+" placeholder="1234">
+            </div>
+
+            <div class="form-group">
+              <label for="account_region_id">Région</label>
+              <select name="account_region_id" id="account_region_id" class="form-control" required>
+                <option value=""></option>
+                {% for region in regions %}
+                  <option value="{{ region.id }}">{{ region.name }} ({{ region.slug|upper }})</option>
+                {% endfor %}
+              </select>
+            </div>
+            
+            <button type="submit" class="btn btn-block btn-primary" id="hoh-import-btn">Importer</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    $(function () {
+      var hoh_import_form = $('form#hoh-import-form');
+      var hoh_import_btn = $('button#hoh-import-btn');
+      var hoh_import_message = $('div.hoh-import-message');
+
+      var is_importing = false;
+
+      hoh_import_form.on('submit', function(e) {
+        e.preventDefault();
+
+        if (is_importing === true) {
+          return false;
+        }
+        
+        var self = $(this);
+
+        is_importing = true;
+        
+        hoh_import_btn.html('<i class="fa fa-circle-o-notch fa-spin"></i> Patientez... (cela peut prendre du temps)');
+        hoh_import_message.removeClass('alert-danger alert-success').addClass('hidden');
+        
+        var data = self.serialize();
+
+        self.find(':input').prop('disabled', true);
+        
+        $.ajax({
+          type: 'POST',
+          url: '{{ baseUrl() }}/account',
+          data: data,
+          error: function() {
+            alert('Une erreur réseau est survenue.');
+          },
+          success: function(response) {
+            if (response.result == 'failure') {
+              hoh_import_message.addClass('alert-danger').removeClass('hidden').show().text(response.data.message);
+            } else if (response.result == 'success') {
+              hoh_import_message.removeClass('alert-danger alert-success').addClass('hidden');
+              alert(response.data.message);
+              location.replace('{{ baseUrl() }}');
+            }
+          },
+          complete: function() {
+            self.find(':input').prop('disabled', false);
+
+            hoh_import_btn.html('Importer');
+
+            is_importing = false;
+          }
+        });
+      });
+    });
+  </script>
+{% endblock %}

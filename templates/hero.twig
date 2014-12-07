@@ -1,0 +1,162 @@
+{% extends 'layout.twig' %}
+
+{% block title %}{{ parent() }} Compte de {{ account.username }} &raquo; {{ hero.name }}{% endblock %}
+
+{% block jsfiles %}
+  {{ parent() }}
+  <script src="{{ baseUrl() }}/js/metricsgraphics.min.js"></script>
+{% endblock %}
+
+{% block cssfiles %}
+  {{ parent() }}
+  <link rel="stylesheet" href="{{ baseUrl() }}/css/metricsgraphics.css">
+{% endblock %}
+
+{% block breadcrumb %}
+  {{ parent() }}
+  <li><a href="{{ baseUrl() }}">Accueil</a></li>
+  <li><a href="{{ baseUrl() }}/account/{{ account.id }}">Compte de {{ account.username }}</a></li>
+  <li class="active">{{ hero.name }}</li>
+{% endblock %}
+
+{% block content %}
+  <h2 class="no-top-margin">
+    <i class="fa fa-star text-muted"></i> {{ hero.name }}
+    <small><i class="fa fa-tag" data-toggle="tooltip" title="Classe"></i> {% if hero.gender == 1 %}{{ hero.hero_class.find_one.name_female }}{% else %}{{ hero.hero_class.find_one.name_male }}{% endif %}</small>
+    <a href="http://{{ account.region.find_one.slug }}.battle.net/d3/fr/profile/{{ account.username }}-{{ account.battlenet_id }}/hero/{{ hero.battlenet_id }}" data-toggle="tooltip" title="Profil officiel Battle.net" class="pull-right"><i class="fa fa-external-link"></i></a>
+  </h2>
+
+  <ul class="list-inline list-unstyled">
+    <li>Dernière actualisation : {% if hero.last_updated is empty %}<span class="label label-warning" data-toggle="tooltip" title="Cliquez sur le bouton Actualiser le Héros">Jamais</span>{% else %}Il y a {{ hero.last_updated|time_ago }}{% endif %}</li>
+    <li><button class="btn btn-success btn-xs" id="refresh-hero-btn"><i class="fa fa-refresh"></i>&nbsp; Actualiser le Héros</button></li>
+  </ul>
+  
+  {% if hero.history().count() == 0 %}
+    <div class="alert alert-warning">Aucune donnée à afficher pour l'instant. Essayez d'actualiser ce Héros.</div>
+  {% elseif hero.history().count() == 1 %}
+    <div class="alert alert-warning">Pas assez de données pour afficher des statistiques. Il faut que ce Héros ait été actualisé au moins deux fois.</div>
+  {% else %}
+    
+  <h3><i class="fa fa-shield fa-fw text-muted"></i> Résistances</h3>
+
+  <div class="text-center">
+    <div class="text-center" id="chart_resists_legend"></div>
+    <div id="chart_resists"></div>
+  </div>
+
+  <h3><i class="fa fa-heart fa-fw text-muted"></i> Vie</h3>
+
+  <div class="text-center">
+    <div class="text-center" id="chart_life_legend"></div>
+    <div id="chart_life"></div>
+  </div>
+
+  <h3><i class="fa fa-gift fa-fw text-muted"></i> Pourcentages</h3>
+
+  <div class="text-center">
+    <div class="text-center" id="chart_percentages_legend"></div>
+    <div id="chart_percentages"></div>
+  </div>
+    
+  {% endif %}
+  
+  <script>
+    $(function () {
+      var hoh_refresh_hero_btn = $('button#refresh-hero-btn');
+
+      hoh_refresh_hero_btn.on('click', function() {
+        hoh_refresh_hero_btn.html('<i class="fa fa-circle-o-notch fa-spin"></i> Patientez... (cela peut prendre du temps)').prop('disabled', true);
+
+        $.ajax({
+          type: 'POST',
+          url: '{{ baseUrl() }}/account/{{ account.id }}/hero/{{ hero.id }}',
+          error: function() {
+            alert('Une erreur réseau est survenue.');
+          },
+          success: function(response) {
+            if (response.result == 'failure') {
+              alert(response.data.message);
+            } else if (response.result == 'success') {
+              alert(response.data.message);
+              location.replace('{{ baseUrl() }}/account/{{ account.id }}/hero/{{ hero.id }}');
+            }
+          },
+          complete: function() {
+            hoh_refresh_hero_btn.html('<i class="fa fa-refresh"></i>&nbsp; Actualiser le Héros').prop('disabled', false);
+          }
+        });
+      });
+
+      {% if hero.history().count() > 1 %}
+      
+      function renderChart(type, legend) {
+        $.ajax({
+          type: 'GET',
+          url: '{{ baseUrl() }}/account/{{ account.id }}/hero/{{ hero.id }}/datatype/'+type,
+          error: function() {
+            alert('Une erreur réseau est survenue.');
+          },
+          success: function(response) {
+            if (response.result == 'failure') {
+              alert(response.data.message);
+            } else if (response.result == 'success') {
+              for (var i = 0; i < response.data.length; i++) {
+                response.data[i] = convert_dates(response.data[i], 'date');
+              }
+
+              data_graphic({
+                data: response.data,
+                width: 600,
+                height: 250,
+                buffer: 0,
+                area: false,
+                right: 25,
+                top: 0,
+                x_extended_ticks: true,
+                left: 40,
+                bottom: 20,
+                target: '#chart_'+type,
+                x_accessor: 'date',
+                y_accessor: 'value',
+                min_y_from_data: true,
+                legend: legend,
+                legend_target: '#chart_'+type+'_legend'
+              });
+            }
+          }
+        });
+      }
+
+      // Résistances
+      renderChart('resists', [
+        'Physique',
+        'Feu',
+        'Froid',
+        'Foudre',
+        'Poison',
+        'Arcanique'
+      ]);
+
+      // Vie
+      renderChart('life', [
+        'Maximale',
+        'Par victime',
+        'Par coup',
+        'Par seconde'
+      ]);
+      
+      // Pourcentages
+      renderChart('percentages', [
+        'Dégâts des coups critiques',
+        'Chances de bloquer',
+        'Bonus de dégâts',
+        'Chances de coup critique',
+        'Découverte d\'or',
+        'Vol de vie',
+        'Découverte d\'objets magiques'
+      ]);
+
+      {% endif %}
+    });
+  </script>
+{% endblock %}
