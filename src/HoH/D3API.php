@@ -4,7 +4,7 @@ namespace HoH;
 class D3API {
   private $endpoint, $username, $id, $region_id;
   
-  private $apikey = 'ng2ssgrqdcesswztm75d3qaz2g8yrqdw';
+  private $apikey = 'YourAPIKey';
   private $locale = 'fr_FR';
   
   function __construct($region, $region_id, $username, $id) {
