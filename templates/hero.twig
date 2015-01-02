@@ -96,7 +96,7 @@
                   legendText: legend[i].label,
                   markerSize: 4,
                   dataPoints: response.data[i],
-                  xValueType: 'dateTime',
+                  xValueType: 'dateTime'
                 });
               }
 
@@ -108,7 +108,17 @@
                   fontFamily: '"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif',
                   fontSize: 16,
                   horizontalAlign: 'center',
-                  verticalAlign: 'top'
+                  verticalAlign: 'top',
+                  cursor: 'pointer',
+                  itemclick: function (e) {
+                    if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                      e.dataSeries.visible = false;
+                    } else {
+                      e.dataSeries.visible = true;
+                    }
+
+                    $('div#chart_'+type).CanvasJSChart().render();
+                  }
                 },
                 axisX: {
                   title: 'Date',
@@ -131,6 +141,7 @@
                   titleFontSize: 16,
                   labelFontSize: 16,
                   gridThickness: 1,
+                  includeZero: false,
                   gridColor: '#ededed'
                 },
                 data: data
