@@ -32,15 +32,15 @@
     <div class="alert alert-warning">Pas assez de données pour afficher des statistiques. Il faut que ce Héros ait été actualisé au moins deux fois.</div>
   {% else %}
     
-  <h3><i class="fa fa-shield fa-fw text-muted"></i> Résistances</h3>
+  <h3><i class="fa fa-shield fa-fw text-muted"></i> Résistances <i class="text-muted fa fa-circle-o-notch fa-spin" id="chart_resists_loading"></i></h3>
 
   <div id="chart_resists" class="chart"></div>
 
-  <h3><i class="fa fa-heart fa-fw text-muted"></i> Vie</h3>
+  <h3><i class="fa fa-heart fa-fw text-muted"></i> Vie <i class="text-muted fa fa-circle-o-notch fa-spin" id="chart_life_loading"></i></h3>
 
   <div id="chart_life" class="chart"></div>
 
-  <h3><i class="fa fa-gift fa-fw text-muted"></i> Pourcentages</h3>
+  <h3><i class="fa fa-gift fa-fw text-muted"></i> Pourcentages <i class="text-muted fa fa-circle-o-notch fa-spin" id="chart_percentages_loading"></i></h3>
 
   <div id="chart_percentages" class="chart"></div>
     
@@ -94,6 +94,7 @@
                   color: legend[i].color,
                   showInLegend: true,
                   legendText: legend[i].label,
+                  markerSize: 4,
                   dataPoints: response.data[i],
                   xValueType: 'dateTime',
                 });
@@ -103,13 +104,11 @@
                 theme: 'theme1',
                 zoomEnabled: true,
                 panEnabled: true,
-                creditText: '',
-                creditHref: '',
                 legend: {
                   fontFamily: '"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif',
                   fontSize: 16,
                   horizontalAlign: 'center',
-                  verticalAlign: 'bottom'
+                  verticalAlign: 'top'
                 },
                 axisX: {
                   title: 'Date',
@@ -121,8 +120,7 @@
                   labelFontSize: 16,
                   valueFormatString: 'DD/MM/YYYY',
                   gridThickness: 1,
-                  gridColor: '#ededed',
-                  labelAngle: 50,
+                  gridColor: '#ededed'
                 },
                 axisY: {
                   title: 'Valeur',
@@ -138,13 +136,16 @@
                 data: data
               });
             }
+          },
+          complete: function() {
+            $('i#chart_'+type+'_loading').hide();
           }
         });
       }
 
       // Résistances
       renderChart('resists', [
-        {label: 'Physique', color: 'black'},
+        {label: 'Physique', color: 'brown'},
         {label: 'Feu', color: 'red'},
         {label: 'Froid', color: 'blue'},
         {label: 'Foudre', color: 'yellow'},
