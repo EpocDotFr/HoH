@@ -19,3 +19,8 @@ td .alert:last-child
 [data-toggle="tooltip"] {
   cursor: help;
 }
+
+.chart {
+  height: 450px;
+  width: 100%;
+}

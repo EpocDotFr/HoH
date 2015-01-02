@@ -222,31 +222,37 @@ $app->get('/account/:account_id/hero/:hero_id/datatype/:datatype', function ($ac
     switch ($datatype) {
       case 'resists':
         foreach ($hero->history()->find_many() as $hero_history) {
-          $data[0][] = ['date' => substr($hero_history->timestamp, 0, 10), 'value' => $hero_history->physical_resist];
-          $data[1][] = ['date' => substr($hero_history->timestamp, 0, 10), 'value' => $hero_history->fire_resist];
-          $data[2][] = ['date' => substr($hero_history->timestamp, 0, 10), 'value' => $hero_history->cold_resist];
-          $data[3][] = ['date' => substr($hero_history->timestamp, 0, 10), 'value' => $hero_history->lightning_resist];
-          $data[4][] = ['date' => substr($hero_history->timestamp, 0, 10), 'value' => $hero_history->poison_resist];
-          $data[5][] = ['date' => substr($hero_history->timestamp, 0, 10), 'value' => $hero_history->arcane_resist];
+          $timestamp = date_create($hero_history->timestamp)->getTimestamp() * 1000;
+
+          $data[0][] = ['x' => $timestamp, 'y' => $hero_history->physical_resist];
+          $data[1][] = ['x' => $timestamp, 'y' => $hero_history->fire_resist];
+          $data[2][] = ['x' => $timestamp, 'y' => $hero_history->cold_resist];
+          $data[3][] = ['x' => $timestamp, 'y' => $hero_history->lightning_resist];
+          $data[4][] = ['x' => $timestamp, 'y' => $hero_history->poison_resist];
+          $data[5][] = ['x' => $timestamp, 'y' => $hero_history->arcane_resist];
         }
       break;
       case 'life':
         foreach ($hero->history()->find_many() as $hero_history) {
-          $data[0][] = ['date' => substr($hero_history->timestamp, 0, 10), 'value' => $hero_history->life];
-          $data[1][] = ['date' => substr($hero_history->timestamp, 0, 10), 'value' => $hero_history->life_per_kill];
-          $data[2][] = ['date' => substr($hero_history->timestamp, 0, 10), 'value' => $hero_history->life_on_hit];
-          $data[3][] = ['date' => substr($hero_history->timestamp, 0, 10), 'value' => $hero_history->healing];
+          $timestamp = date_create($hero_history->timestamp)->getTimestamp() * 1000;
+
+          $data[0][] = ['x' => $timestamp, 'y' => $hero_history->life];
+          $data[1][] = ['x' => $timestamp, 'y' => $hero_history->life_per_kill];
+          $data[2][] = ['x' => $timestamp, 'y' => $hero_history->life_on_hit];
+          $data[3][] = ['x' => $timestamp, 'y' => $hero_history->healing];
         }
       break;
       case 'percentages':
         foreach ($hero->history()->find_many() as $hero_history) {
-          $data[0][] = ['date' => substr($hero_history->timestamp, 0, 10), 'value' => $hero_history->crit_damage];
-          $data[1][] = ['date' => substr($hero_history->timestamp, 0, 10), 'value' => $hero_history->block_chance];
-          $data[2][] = ['date' => substr($hero_history->timestamp, 0, 10), 'value' => $hero_history->damage_increase];
-          $data[3][] = ['date' => substr($hero_history->timestamp, 0, 10), 'value' => $hero_history->crit_chance];
-          $data[4][] = ['date' => substr($hero_history->timestamp, 0, 10), 'value' => $hero_history->gold_find];
-          $data[5][] = ['date' => substr($hero_history->timestamp, 0, 10), 'value' => $hero_history->lifes_steal];
-          $data[6][] = ['date' => substr($hero_history->timestamp, 0, 10), 'value' => $hero_history->magic_find];
+          $timestamp = date_create($hero_history->timestamp)->getTimestamp() * 1000;
+
+          $data[0][] = ['x' => $timestamp, 'y' => $hero_history->crit_damage];
+          $data[1][] = ['x' => $timestamp, 'y' => $hero_history->block_chance];
+          $data[2][] = ['x' => $timestamp, 'y' => $hero_history->damage_increase];
+          $data[3][] = ['x' => $timestamp, 'y' => $hero_history->crit_chance];
+          $data[4][] = ['x' => $timestamp, 'y' => $hero_history->gold_find];
+          $data[5][] = ['x' => $timestamp, 'y' => $hero_history->lifes_steal];
+          $data[6][] = ['x' => $timestamp, 'y' => $hero_history->magic_find];
         }
       break;
     }
